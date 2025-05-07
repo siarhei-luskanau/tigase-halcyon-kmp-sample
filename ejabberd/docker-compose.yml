@@ -1,0 +1,25 @@
+services:
+  ejabberd:
+    image: ejabberd/ecs
+    platform: linux/amd64
+    container_name: ejabberd
+    ports:
+      - "5222:5222"
+      - "5269:5269"
+      - "5280:5280"
+      - "5443:5443"
+    volumes:
+      - ./ejabberd.yml:/home/ejabberd/conf/ejabberd.yml:ro
+      - ./conf/certs:/home/ejabberd/conf/certs/:ro
+      - ./setup-ejabberd.sh:/opt/setup-ejabberd.sh:ro
+    networks:
+      - ejabberd-network
+    entrypoint: [ "/bin/sh", "-c", "/opt/setup-ejabberd.sh && ejabberdctl foreground" ]
+    user: root
+
+networks:
+  ejabberd-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16  # trusted ip range; localhost clients use this subnet for ejabberd connection

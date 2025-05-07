@@ -1,7 +1,7 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
-import tigase.halcyon.kmp.sample.App
 import kotlinx.browser.document
+import tigase.halcyon.kmp.sample.App
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {

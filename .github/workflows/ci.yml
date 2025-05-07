@@ -1,0 +1,201 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  JAVA_VERSION: 21
+  JAVA_DISTRIBUTION: 'zulu'
+
+jobs:
+
+
+  Lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew wrapper --gradle-version latest --stacktrace
+      - run: ./gradlew wrapper --gradle-version latest --stacktrace
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update Gradle wrapper
+
+      - run: ./gradlew ktlintFormat --stacktrace
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Ktlint format
+
+      - run: ./gradlew lint --stacktrace
+
+
+
+  Tests:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        gradle-tasks: [
+          "jvmTest",
+          "testDebugUnitTest",
+          "jsBrowserTest"
+        ]
+        os: [ ubuntu-latest ]
+        experimental: [ false ]
+        emulator: [ false ]
+        XMPP_SERVER_ADDRESS: [ 'localhost' ]
+        include:
+          - gradle-tasks: "managedVirtualDeviceDebugAndroidTest -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect"
+            os: ubuntu-latest
+            experimental: false
+            emulator: true
+            XMPP_SERVER_ADDRESS: '10.0.2.2'
+          - gradle-tasks: "iosSimulatorArm64Test"
+            os: macos-13
+            experimental: true
+            emulator: false
+            XMPP_SERVER_ADDRESS: 'localhost'
+          - gradle-tasks: "iosSimulatorArm64Test"
+            os: macos-latest
+            experimental: true
+            emulator: false
+            XMPP_SERVER_ADDRESS: 'localhost'
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Enable KVM group perms
+        if: matrix.emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew ciSdkManagerLicenses --stacktrace
+        if: matrix.emulator
+
+      - name: install and start ejabberd
+        run: |
+          cd ejabberd
+          brew install ejabberd
+          brew services start ejabberd
+          ./setup-ejabberd.sh
+        if: contains(matrix.os, 'macos-')
+
+      - name: Start docker with ejabberd
+        run: |
+          cd ejabberd
+          docker compose up -d
+        if: contains(matrix.os, 'ubuntu-')
+
+      - run: ./gradlew clean ${{ matrix.gradle-tasks }} -DXMPP_SERVER_ADDRESS=${{ matrix.XMPP_SERVER_ADDRESS }} --stacktrace
+
+
+
+  Android:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew assembleDebug assembleRelease --stacktrace
+
+
+
+  Desktop:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+          macos-latest,
+          ubuntu-24.04-arm,
+          ubuntu-latest,
+          windows-latest
+        ]
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew :composeApp:jvmJar --stacktrace
+
+
+
+  JsBrowser:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew :composeApp:jsMainClasses --stacktrace
+
+      - run: ./gradlew :composeApp:jsBrowserDistribution --stacktrace
+
+
+
+  iOS:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+          macos-13,
+          macos-latest
+        ]
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew ciIos --stacktrace

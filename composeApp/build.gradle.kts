@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
@@ -13,7 +15,7 @@ plugins {
 kotlin {
     jvmToolchain(libs.versions.build.jvmTarget.get().toInt())
     androidTarget {
-        //https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-test.html
+        // https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-test.html
         instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
     }
 
@@ -68,23 +70,39 @@ kotlin {
         jsMain.dependencies {
             implementation(compose.html.core)
         }
-
     }
 }
 
 android {
     namespace = "tigase.halcyon.kmp.sample"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 35
+        targetSdk = 36
 
         applicationId = "tigase.halcyon.kmp.sample.androidApp"
         versionCode = 1
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                it.testLogging {
+                    exceptionFormat = TestExceptionFormat.FULL
+                    events = TestLogEvent.values().toSet()
+                }
+            }
+        }
+        animationsDisabled = true
+        @Suppress("UnstableApiUsage")
+        managedDevices.localDevices.create("managedVirtualDevice") {
+            device = "Pixel 2"
+            apiLevel = 33
+        }
     }
 }
 
@@ -117,7 +135,7 @@ buildConfig {
         topLevelConstants = true
         internalVisibility = false
     }
-    val xmppServerAddress = "jabber.dev.wispomessenger.com"
+    val xmppServerAddress = System.getProperty("XMPP_SERVER_ADDRESS") ?: "localhost"
     buildConfigField("String", "XMPP_SERVER_ADDRESS", "\"$xmppServerAddress\"")
     val xmppServerPort = 5222
     buildConfigField("Int", "XMPP_SERVER_PORT", "$xmppServerPort")

@@ -14,10 +14,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import tigase.halcyon.core.AbstractHalcyon
 import tigase.halcyon.core.HalcyonStateChangeEvent
 import tigase.halcyon.core.builder.ConfigurationBuilder
 import tigase.halcyon.core.builder.createHalcyon
@@ -27,10 +33,6 @@ import tigase.halcyon.core.xmpp.modules.PingModule
 import tigase.halcyon.core.xmpp.toBareJID
 import tigase.halcyon.core.xmpp.toJID
 import tigase.halcyon.kmp.sample.theme.AppTheme
-import kotlin.time.Duration.Companion.seconds
-import androidx.compose.runtime.mutableStateListOf
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Composable
 internal fun App() = AppTheme {
@@ -67,8 +69,10 @@ internal fun App() = AppTheme {
                 }
             }
 
+            var state: AbstractHalcyon.State? = null
             halcyon.eventBus.register(HalcyonStateChangeEvent) { event ->
                 logs.add("StateChange: ${event.oldState}->${event.newState}")
+                state = event.newState
             }
             halcyon.eventBus.register(SentXMLElementEvent) { event ->
                 logs.add("XML>>> ${event.element.getAsString()}")
@@ -76,12 +80,21 @@ internal fun App() = AppTheme {
             halcyon.eventBus.register(ReceivedXMLElementEvent) { event ->
                 logs.add("XML<<< ${event.element.getAsString()}")
             }
-
             halcyon.connect()
+            while (state != AbstractHalcyon.State.Connected) {
+                delay(100.milliseconds)
+            }
 
             halcyon.getModule(PingModule)
                 .ping(user.domain.toJID())
-                .send()
+                .response { response ->
+                    response.onSuccess { successResult ->
+                        logs.add("Ping Success : ${successResult.time}")
+                    }
+                    response.onFailure { error ->
+                        logs.add("Ping Failure : $error")
+                    }
+                }.send()
 
             delay(60.seconds)
 
