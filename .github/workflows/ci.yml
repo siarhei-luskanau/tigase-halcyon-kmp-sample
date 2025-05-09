@@ -11,8 +11,40 @@ on:
 env:
   JAVA_VERSION: 21
   JAVA_DISTRIBUTION: 'zulu'
+  HALCYON_REPOSITORY: 'tigase/halcyon'
+  HALCYON_REF: 'master'
 
 jobs:
+
+
+  halcyon:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+          macos-13,
+          ubuntu-latest,
+          windows-latest
+        ]
+        experimental: [ false ]
+        include:
+          - os: macos-latest
+            experimental: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HALCYON_REPOSITORY }}
+          ref: ${{ env.HALCYON_REF }}
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew clean build assemble test -x jsBrowserTest --console=plain --stacktrace
+
 
 
   Lint:
