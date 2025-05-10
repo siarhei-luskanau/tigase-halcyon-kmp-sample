@@ -11,27 +11,23 @@ on:
 env:
   JAVA_VERSION: 21
   JAVA_DISTRIBUTION: 'zulu'
-  HALCYON_REPOSITORY: 'tigase/halcyon'
-  HALCYON_REF: 'master'
+  HALCYON_REPOSITORY: 'siarhei-luskanau/halcyon'
+  HALCYON_REF: 'ios-openssl'
 
 jobs:
 
 
   halcyon:
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
         os: [
           macos-13,
+          macos-latest,
           ubuntu-latest,
           windows-latest
         ]
-        experimental: [ false ]
-        include:
-          - os: macos-latest
-            experimental: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -73,6 +69,16 @@ jobs:
         with:
           commit_message: Ktlint format
 
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HALCYON_REPOSITORY }}
+          ref: ${{ env.HALCYON_REF }}
+          path: halcyon
+
+      - run: |
+          cd halcyon 
+          ./gradlew publishToMavenLocal --stacktrace
+
       - run: ./gradlew lint --stacktrace
 
 
@@ -112,6 +118,12 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HALCYON_REPOSITORY }}
+          ref: ${{ env.HALCYON_REF }}
+          path: halcyon
+
       - name: Enable KVM group perms
         if: matrix.emulator
         run: |
@@ -125,6 +137,10 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
 
       - uses: gradle/actions/setup-gradle@v4
+
+      - run: |
+          cd halcyon 
+          ./gradlew publishToMavenLocal --stacktrace
 
       - run: ./gradlew ciSdkManagerLicenses --stacktrace
         if: matrix.emulator
@@ -153,12 +169,22 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HALCYON_REPOSITORY }}
+          ref: ${{ env.HALCYON_REF }}
+          path: halcyon
+
       - uses: actions/setup-java@v4
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
 
       - uses: gradle/actions/setup-gradle@v4
+
+      - run: |
+          cd halcyon 
+          ./gradlew publishToMavenLocal --stacktrace
 
       - run: ./gradlew assembleDebug assembleRelease --stacktrace
 
@@ -179,12 +205,22 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HALCYON_REPOSITORY }}
+          ref: ${{ env.HALCYON_REF }}
+          path: halcyon
+
       - uses: actions/setup-java@v4
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
 
       - uses: gradle/actions/setup-gradle@v4
+
+      - run: |
+          cd halcyon 
+          ./gradlew publishToMavenLocal --stacktrace
 
       - run: ./gradlew :composeApp:jvmJar --stacktrace
 
@@ -196,12 +232,22 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HALCYON_REPOSITORY }}
+          ref: ${{ env.HALCYON_REF }}
+          path: halcyon
+
       - uses: actions/setup-java@v4
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
 
       - uses: gradle/actions/setup-gradle@v4
+
+      - run: |
+          cd halcyon 
+          ./gradlew publishToMavenLocal --stacktrace
 
       - run: ./gradlew :composeApp:jsMainClasses --stacktrace
 
@@ -223,11 +269,21 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.HALCYON_REPOSITORY }}
+          ref: ${{ env.HALCYON_REF }}
+          path: halcyon
+
       - uses: actions/setup-java@v4
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
 
       - uses: gradle/actions/setup-gradle@v4
+
+      - run: |
+          cd halcyon 
+          ./gradlew publishToMavenLocal --stacktrace
 
       - run: ./gradlew ciIos --stacktrace
