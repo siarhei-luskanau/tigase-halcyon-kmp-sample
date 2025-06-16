@@ -3,7 +3,7 @@
 agp = "8.10.0"
 androidx-activityCompose = "1.10.1"
 build-jvmTarget = "17"
-buildConfig = "5.6.5"
+buildConfig = "5.6.6"
 compose = "1.8.1"
 kotlin = "2.1.21"
 ktlint = "1.6.0"
