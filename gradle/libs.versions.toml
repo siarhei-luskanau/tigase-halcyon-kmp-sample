@@ -5,7 +5,7 @@ androidx-activityCompose = "1.10.1"
 build-jvmTarget = "17"
 buildConfig = "5.6.7"
 compose = "1.8.2"
-kotlin = "2.2.20-Beta1"
+kotlin = "2.2.20-Beta2"
 ktlint = "1.7.1"
 tigase-halcyon = "1.0.1-SNAPSHOT"
 
