@@ -30,7 +30,7 @@ jobs:
         ]
         experimental: [ false ]
         include:
-          - os: macos-latest
+          - os: macos-14
             experimental: true
     steps:
       - uses: actions/checkout@v5
@@ -38,7 +38,7 @@ jobs:
           repository: ${{ env.HALCYON_REPOSITORY }}
           ref: ${{ env.HALCYON_REF }}
       - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
@@ -57,7 +57,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
@@ -106,7 +106,7 @@ jobs:
             emulator: false
             XMPP_SERVER_ADDRESS: 'localhost'
           - gradle-tasks: "iosSimulatorArm64Test"
-            os: macos-latest
+            os: macos-14
             experimental: true
             emulator: false
             XMPP_SERVER_ADDRESS: 'localhost'
@@ -121,7 +121,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
@@ -155,7 +155,7 @@ jobs:
 
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
@@ -181,7 +181,7 @@ jobs:
 
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
@@ -198,7 +198,7 @@ jobs:
 
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
@@ -219,13 +219,13 @@ jobs:
       matrix:
         os: [
           macos-13,
-          macos-latest
+          macos-14
         ]
     steps:
 
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           java-version: ${{ env.JAVA_VERSION }}
