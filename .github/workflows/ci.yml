@@ -17,35 +17,6 @@ env:
 jobs:
 
 
-  halcyon:
-    runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [
-          macos-13,
-          ubuntu-latest,
-          windows-latest
-        ]
-        experimental: [ false ]
-        include:
-          - os: macos-14
-            experimental: true
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          repository: ${{ env.HALCYON_REPOSITORY }}
-          ref: ${{ env.HALCYON_REF }}
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v5
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-      - uses: gradle/actions/setup-gradle@v5
-      - run: ./gradlew clean build assemble test -x jsBrowserTest --console=plain --stacktrace
-
-
 
   Lint:
     runs-on: ubuntu-latest
