@@ -72,12 +72,12 @@ jobs:
             emulator: true
             XMPP_SERVER_ADDRESS: '10.0.2.2'
           - gradle-tasks: "iosSimulatorArm64Test"
-            os: macos-13
+            os: macos-14
             experimental: true
             emulator: false
             XMPP_SERVER_ADDRESS: 'localhost'
           - gradle-tasks: "iosSimulatorArm64Test"
-            os: macos-14
+            os: macos-15-intel
             experimental: true
             emulator: false
             XMPP_SERVER_ADDRESS: 'localhost'
@@ -189,8 +189,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [
-          macos-13,
-          macos-14
+          macos-14,
+          macos-15-intel
         ]
     steps:
 
