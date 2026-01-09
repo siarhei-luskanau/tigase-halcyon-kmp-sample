@@ -7,7 +7,7 @@ buildConfig = "6.0.7"
 compose = "1.9.3"
 kotlin = "2.3.0"
 ktlint = "1.8.0"
-tigase-halcyon = "1.0.1-SNAPSHOT"
+tigase-halcyon = "2.0.0-SNAPSHOT"
 
 [libraries]
 
